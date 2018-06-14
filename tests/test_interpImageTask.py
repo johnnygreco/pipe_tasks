@@ -35,7 +35,7 @@ import numpy as np
 
 import lsst.utils.tests
 import lsst.afw.image as afwImage
-import lsst.afw.display.ds9 as ds9
+import lsst.afw.display as afwDisplay
 import lsst.ip.isr as ipIsr
 import lsst.pex.config as pexConfig
 from lsst.pipe.tasks.interpImage import InterpImageTask
@@ -79,12 +79,12 @@ class InterpolationTestCase(unittest.TestCase):
         defectList = ipIsr.getDefectListFromMask(mi, pixelPlane)
 
         if display:
-            ds9.mtv(mi, frame=0)
+            afwDisplay.getDisplay(frame=0).mtv(mi)
 
         def validateInterp(miInterp, useFallbackValueAtEdge, fallbackValue):
             imaInterp = miInterp.getImage().getArray()
             if display:
-                ds9.mtv(miInterp, frame=1)
+                afwDisplay.getDisplay(frame=1).mtv(miInterp)
             self.assertGreater(np.min(imaInterp), min(-2, 2*fallbackValue))
             self.assertGreater(max(2, 2*fallbackValue), np.max(imaInterp))
             val0 = np.mean(miInterp.getImage()[1, :].getArray(), dtype=float)

@@ -19,8 +19,8 @@
 # the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
+import lsst.afw.display as afwDisplay
 import lsst.afw.math as afwMath
-import lsst.afw.display.ds9 as ds9
 import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
 import lsst.pex.config as pexConfig
@@ -121,7 +121,7 @@ Additionally you can enable any debug outputs that your chosen star selector and
 
 This code is in @link measurePsfTask.py@endlink in the examples directory, and can be run as @em e.g.
 @code
-examples/measurePsfTask.py --ds9
+examples/measurePsfTask.py --doDisplay
 @endcode
 @dontinclude measurePsfTask.py
 
@@ -171,7 +171,7 @@ We can then unpack and use the results:
 @skip psf
 @until cellSet
 
-If you specified @c --ds9 you can see the PSF candidates:
+If you specified @c  --doDisplay you can see the PSF candidates:
 
 @skip display
 @until RED
@@ -285,10 +285,11 @@ into your debug.py file and run measurePsfTask.py with the @c --debug flag.
         self.log.info("PSF star selector found %d candidates" % len(psfCandidateList))
 
         if display:
-            frame = display
+            frame = 1
             if displayExposure:
-                ds9.mtv(exposure, frame=frame, title="psf determination")
-
+                disp = afwDisplay.getDisplay(frame=frame)
+                disp.mtv(exposure, title="psf determination")
+                frame += 1
         #
         # Determine PSF
         #
@@ -316,7 +317,7 @@ into your debug.py file and run measurePsfTask.py with the @c --debug flag.
                                       frame=frame)
             if displayPsfMosaic:
                 maUtils.showPsfMosaic(exposure, psf, frame=frame, showFwhm=True)
-                ds9.scale(0, 1, "linear", frame=frame)
+                disp.scale("linear", 0, 1)
                 frame += 1
 
         return pipeBase.Struct(
@@ -335,15 +336,15 @@ into your debug.py file and run measurePsfTask.py with the @c --debug flag.
 
 
 def showPsfSpatialCells(exposure, cellSet, showBadCandidates, frame=1):
-    maUtils.showPsfSpatialCells(exposure, cellSet,
-                                symb="o", ctype=ds9.CYAN, ctypeUnused=ds9.YELLOW,
-                                size=4, frame=frame)
+    disp = maUtils.showPsfSpatialCells(exposure, cellSet,
+                                       symb="o", ctype=afwDisplay.CYAN, ctypeUnused=afwDisplay.YELLOW,
+                                       size=4, frame=frame)
     for cell in cellSet.getCellList():
         for cand in cell.begin(not showBadCandidates):  # maybe include bad candidates
             status = cand.getStatus()
-            ds9.dot('+', *cand.getSource().getCentroid(), frame=frame,
-                    ctype=ds9.GREEN if status == afwMath.SpatialCellCandidate.GOOD else
-                    ds9.YELLOW if status == afwMath.SpatialCellCandidate.UNKNOWN else ds9.RED)
+            disp.dot('+', *cand.getSource().getCentroid(),
+                     ctype=afwDisplay.GREEN if status == afwMath.SpatialCellCandidate.GOOD else
+                     afwDisplay.YELLOW if status == afwMath.SpatialCellCandidate.UNKNOWN else afwDisplay.RED)
 
 
 def plotPsfCandidates(cellSet, showBadCandidates=False, frame=1):
@@ -376,8 +377,8 @@ def plotPsfCandidates(cellSet, showBadCandidates=False, frame=1):
             pass
 
         mos.append(im, label,
-                   ds9.GREEN if status == afwMath.SpatialCellCandidate.GOOD else
-                   ds9.YELLOW if status == afwMath.SpatialCellCandidate.UNKNOWN else ds9.RED)
+                   afwDisplay.GREEN if status == afwMath.SpatialCellCandidate.GOOD else
+                   afwDisplay.YELLOW if status == afwMath.SpatialCellCandidate.UNKNOWN else afwDisplay.RED)
 
     if mos.images:
         mos.makeMosaic(frame=frame, title="Psf Candidates")

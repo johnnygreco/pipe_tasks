@@ -28,7 +28,7 @@ import lsst.utils.tests
 import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
 import lsst.afw.geom as afwGeom
-import lsst.afw.display.ds9 as ds9
+import lsst.afw.display as afwDisplay
 from lsst.pipe.base import Struct
 from lsst.pipe.tasks.registerImage import RegisterConfig, RegisterTask
 
@@ -206,11 +206,12 @@ class RegisterTestCase(unittest.TestCase):
         """
         if not display:
             return
-        ds9.mtv(image, title=title, frame=frame)
-        with ds9.Buffering():
+        disp = afwDisplay.getDisplay(frame=frame)
+        disp.mtv(image, title=title)
+        with disp.Buffering():
             for s in sources:
                 center = s.getCentroid()
-                ds9.dot("o", center.getX(), center.getY(), frame=frame)
+                disp.dot("o", center.getX(), center.getY(), frame=frame)
 
 
 class MyMemoryTestCase(lsst.utils.tests.MemoryTestCase):
